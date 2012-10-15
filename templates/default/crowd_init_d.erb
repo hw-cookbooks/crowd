@@ -30,15 +30,11 @@ case "$1" in
     echo "Stopping crowd server"
     $CROWD_STOP
     ;;
-  restart)
-    CROWD_STOP
-    CROWD_START
-    ;;
   status)
     kill -0 `pgrep -u $CROWD_USER java` &> /dev/null
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart|status}"
+    echo "Usage: $0 {start|stop|status}"
     exit 1
     ;;
 esac
