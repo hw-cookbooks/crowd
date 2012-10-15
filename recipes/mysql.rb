@@ -40,8 +40,8 @@ execute "add crowd user to database" do
 end
 
 jcon_url = File.join(
-  node[:crowd][:mysql][:jconnector][:base_url],
-  "mysql-connector-java-#{node[:crowd][:mysql][:jconnector][:version]}.tar.gz"
+  node[:crowd][:mysql][:connectorj][:base_url],
+  "mysql-connector-java-#{node[:crowd][:mysql][:connectorj][:version]}.tar.gz"
 )
 jcon_local = File.join(node[:crowd][:scratch_dir], File.basename(jcon_url))
 
@@ -50,16 +50,16 @@ remote_file jcon_local do
   action :create_if_missing
 end
 
-execute 'unpack jconnector' do
+execute 'unpack connectorj' do
   command "tar -xvzf #{jcon_local}"
   cwd File.dirname(jcon_local)
   action :nothing
   subscribes :run, resources(:remote_file => jcon_local), :immediately
 end
 
-ruby_block 'set jconnector path' do
+ruby_block 'set connectorj path' do
   block do
-    node[:crowd][:mysql][:jconnector][:local_jar] = File.join(
+    node[:crowd][:mysql][:connectorj][:local_jar] = File.join(
       node[:crowd][:scratch_dir],
       File.basename(jcon_local).sub('.tar.gz', ''),
       "#{File.basename(jcon_local).sub('.tar.gz', '')}-bin.jar"
@@ -69,15 +69,15 @@ ruby_block 'set jconnector path' do
   subscribes :run, resources(:remote_file => jcon_local), :immediately
 end
 
-ruby_block 'install jconnector for crowd' do
+ruby_block 'install connectorj for crowd' do
   block do
     ['apache-tomcat/lib', 'apache-tomcat/common/lib'].each do |jar_inst_dir|
       File.copy(
-        node[:crowd][:mysql][:jconnector][:local_jar],
+        node[:crowd][:mysql][:connectorj][:local_jar],
         File.join(
           node[:crowd][:install][:current],
           jar_inst_dir,
-          File.basename(node[:crowd][:mysql][:jconnector][:local_jar])
+          File.basename(node[:crowd][:mysql][:connectorj][:local_jar])
         )
       )
     end
@@ -85,11 +85,11 @@ ruby_block 'install jconnector for crowd' do
   only_if do
     ['apache-tomcat/lib', 'apache-tomcat/common/lib'].each{ |jar_inst_dir|
       File.exists?(
-        node[:crowd][:mysql][:jconnector][:local_jar],
+        node[:crowd][:mysql][:connectorj][:local_jar],
         File.join(
           node[:crowd][:install][:current],
           jar_inst_dir,
-          File.basename(node[:crowd][:mysql][:jconnector][:local_jar])
+          File.basename(node[:crowd][:mysql][:connectorj][:local_jar])
         )
       )
     }.detect{|e| e == false}.nil?  # Ensures all exists? checks return true!
