@@ -1,0 +1,41 @@
+#
+# Author: Chris Roberts (<chris@hw-ops.com>)
+#
+# chkconfig: 345 99 1
+# Description: Crowd server init
+# Provides: crowd
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 2 6
+
+CROWD_START=<%= @start_script %>
+CROWD_STOP=<%= @stop_script %>
+CROWD_USER=<%= @user %>
+
+<% if @el -%>
+source /etc/rc.d/init.d/functions
+<% end -%>
+
+[ -x <%= @start_script %> ] || exit 1
+
+case "$1" in
+  start)
+    echo "Starting crowd server"
+    <% if @el -%>
+    daemon --user $USER $CROWD_START
+    <% else -%>
+    start-stop-daemon --start --quiet --user $USER --exec $CROWD_START
+    <% end -%>
+    ;;
+  stop)
+    echo "Stopping crowd server"
+    $CROWD_STOP
+    ;;
+  restart)
+    CROWD_STOP
+    CROWD_START
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
