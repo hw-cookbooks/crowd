@@ -25,13 +25,19 @@ node[:crowd][:install][:current] = File.join(
   File.basename(l_path).sub(node[:crowd][:extensions][node[:crowd][:flavor]], '')
 )
 
-execute "install crowd" do
+execute 'install crowd' do
   command "tar -xzf #{l_path}"
   cwd node[:crowd][:install][:dir]
   not_if do
     File.directory?(node[:crowd][:install][:current])
   end
   notifies :restart, resources(:service => 'crowd'), :delayed
+end
+
+execute "update crowd permissions" do
+  command "chown -R #{node[:crowd][:run_as]} #{node[:crowd][:install][:current]}"
+  action :nothing
+  subscribes :run, resources(:execute => 'install crowd'), :immediately
 end
 
 include_recipe 'crowd::datastore'
@@ -49,10 +55,10 @@ end
 template '/etc/init.d/crowd' do
   source 'crowd_init_d.erb'
   variables(
-    :start_script => '',
-    :stop_script => '',
+    :start_script => "#{node[:crowd][:install][:current]}/start_crowd.sh",
+    :stop_script => "#{node[:crowd][:install][:current]}/stop_crowd.sh",
     :user => node[:crowd][:run_as],
-    :el => node.platform_family == 'el'
+    :el => node.platform_family == 'rhel'
   )
   mode 0755
 end
