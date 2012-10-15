@@ -19,3 +19,4 @@ default[:crowd][:mysql][:connectorj][:version] = '5.1.22'
 default[:crowd][:mysql][:connectorj][:base_url] = 'http://mysql.mirrors.pair.com/Downloads/Connector-J' 
 default[:crowd][:install][:dir] = '/usr/local/crowd'
 default[:crowd][:run_as] = 'crowd'
+default[:crowd][:iptables] = true

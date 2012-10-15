@@ -3,10 +3,12 @@ directory node[:crowd][:scratch_dir] do
 end
 
 include_recipe 'java'
-include_recipe 'iptables'
 include_recipe 'crowd::install'
 
-iptables_rule 'crowd'
+if(node[:crowd][:iptables])
+  include_recipe 'iptables'
+  iptables_rule 'crowd'
+end
 
 service 'crowd' do
   action [:enable, :start]
