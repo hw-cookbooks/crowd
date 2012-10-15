@@ -1,33 +1,29 @@
 include_recipe 'crowd'
 
-r_path = File.join(
-  node[:crowd][:base_url], 
-  "#{node[:crowd][:names][node[:crowd][:flavor]]}#{node[:crowd][:extensions][node[:crowd][:flavor]]}"
-)
-l_path = File.join(node[:crowd][:scratch_dir], File.basename(r_path))
-
-remote_path l_path do
-  source r_path
-  action :create_if_missing
+# Stub the service for install notifications
+service 'crowd' do
+  action :nothing
 end
 
 directory node[:crowd][:install][:dir] do
   action :create
 end
 
-ruby_block 'set crowd install path' do
-  block do
-    node[:crowd][:install][:current] = File.join(
-      node[:crowd][:install][:dir],
-      File.basename(l_path).sub(node[:crowd][:extensions][node[:crowd][:flavor]], '')
-    )
-  end
-  only_if do
-    node[:crowd][:install][:current].nil? ||
-    !node[:crowd][:install][:current].include?(node[:crowd][:version])
-  end
-  notifies :restart, resources(:service => 'crowd'), :delayed
+r_path = File.join(
+  node[:crowd][:base_url], 
+  "#{node[:crowd][:names][node[:crowd][:flavor]]}-#{node[:crowd][:version]}#{node[:crowd][:extensions][node[:crowd][:flavor]]}"
+)
+l_path = File.join(node[:crowd][:scratch_dir], File.basename(r_path))
+
+remote_file l_path do
+  source r_path
+  action :create_if_missing
 end
+
+node[:crowd][:install][:current] = File.join(
+  node[:crowd][:install][:dir],
+  File.basename(l_path).sub(node[:crowd][:extensions][node[:crowd][:flavor]], '')
+)
 
 execute "install crowd" do
   command "tar -xzf #{l_path}"
@@ -35,6 +31,7 @@ execute "install crowd" do
   not_if do
     File.directory?(node[:crowd][:install][:current])
   end
+  notifies :restart, resources(:service => 'crowd'), :delayed
 end
 
 include_recipe 'crowd::datastore'
