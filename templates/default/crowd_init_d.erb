@@ -21,7 +21,7 @@ case "$1" in
   start)
     echo "Starting crowd server"
     <% if @el -%>
-    daemon --user $USER $CROWD_START
+    daemon --user $CROWD_USER $CROWD_START
     <% else -%>
     start-stop-daemon --start --quiet --user $USER --exec $CROWD_START
     <% end -%>
@@ -34,8 +34,11 @@ case "$1" in
     CROWD_STOP
     CROWD_START
     ;;
+  status)
+    kill -0 `pgrep -u $CROWD_USER java` &> /dev/null
+    ;;
   *)
-    echo "Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|restart|status}"
     exit 1
     ;;
 esac
