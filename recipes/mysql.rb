@@ -7,7 +7,7 @@ file File.join(node[:mysql][:confd_dir], 'crowd.cnf') do
   notifies :restart, resources(:service => 'mysql'), :immediately
 end
 
-my_exe = File.join(node[:crowd][:mysql][:bin_dir], 'mysql')
+my_exe = "#{File.join(node[:crowd][:mysql][:bin_dir], 'mysql')} --user=root --password=#{node[:mysql][:server_root_password]}"
 
 execute "add crowd database" do
   command "#{my_exe} --execute \"create database #{node[:crowd][:mysql][:dbname]} character set utf8 collate utf8_bin;\""
@@ -57,22 +57,25 @@ execute 'unpack connectorj' do
   subscribes :run, resources(:remote_file => jcon_local), :immediately
 end
 
-ruby_block 'set connectorj path' do
-  block do
-    node[:crowd][:mysql][:connectorj][:local_jar] = File.join(
-      node[:crowd][:scratch_dir],
-      File.basename(jcon_local).sub('.tar.gz', ''),
-      "#{File.basename(jcon_local).sub('.tar.gz', '')}-bin.jar"
-    )
+node[:crowd][:mysql][:connectorj][:local_jar] = File.join(
+  node[:crowd][:scratch_dir],
+  File.basename(jcon_local).sub('.tar.gz', ''),
+  "#{File.basename(jcon_local).sub('.tar.gz', '')}-bin.jar"
+)
+
+
+['apache-tomcat/lib', 'apache-tomcat/common/lib'].each do |jar_inst_dir|
+  directory File.join(node[:crowd][:install][:current], jar_inst_dir) do
+    action :create
+    recursive true
   end
-  action :nothing
-  subscribes :run, resources(:remote_file => jcon_local), :immediately
 end
+
 
 ruby_block 'install connectorj for crowd' do
   block do
     ['apache-tomcat/lib', 'apache-tomcat/common/lib'].each do |jar_inst_dir|
-      File.copy(
+      FileUtils.copy(
         node[:crowd][:mysql][:connectorj][:local_jar],
         File.join(
           node[:crowd][:install][:current],
@@ -85,7 +88,6 @@ ruby_block 'install connectorj for crowd' do
   only_if do
     ['apache-tomcat/lib', 'apache-tomcat/common/lib'].each{ |jar_inst_dir|
       File.exists?(
-        node[:crowd][:mysql][:connectorj][:local_jar],
         File.join(
           node[:crowd][:install][:current],
           jar_inst_dir,
