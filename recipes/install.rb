@@ -20,7 +20,7 @@ remote_file l_path do
   action :create_if_missing
 end
 
-node[:crowd][:install][:current] = File.join(
+node.set[:crowd][:install][:current] = File.join(
   node[:crowd][:install][:dir],
   File.basename(l_path).sub(node[:crowd][:extensions][node[:crowd][:flavor]], '')
 )
