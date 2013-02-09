@@ -25,6 +25,11 @@ node[:crowd][:install][:current] = File.join(
   File.basename(l_path).sub(node[:crowd][:extensions][node[:crowd][:flavor]], '')
 )
 
+user node[:crowd][:run_as] do
+  action :create
+  shell '/bin/false'
+end
+
 execute 'install crowd' do
   command "tar -xzf #{l_path}"
   cwd node[:crowd][:install][:dir]
@@ -45,11 +50,6 @@ include_recipe 'crowd::datastore'
 file File.join(node[:crowd][:install][:current], 'crowd-webapp/WEB-INF/classes/crowd-init.properties') do
   content "crowd.home=#{node[:crowd][:install][:current]}\n"
   mode 0644
-end
-
-user node[:crowd][:run_as] do
-  action :create
-  shell '/bin/false'
 end
 
 template '/etc/init.d/crowd' do
