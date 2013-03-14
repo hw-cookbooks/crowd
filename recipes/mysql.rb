@@ -3,7 +3,7 @@ include_recipe 'mysql::server'
 
 file File.join(node[:mysql][:confd_dir], 'crowd.cnf') do
   action :create
-  content("[mysqld]\ntransaction-isolation = READ-COMMITED\n")
+  content("[mysqld]\ntransaction-isolation = READ-COMMITTED\n")
   notifies :restart, resources(:service => 'mysql'), :immediately
 end
 
@@ -36,7 +36,7 @@ execute "add crowd user to database" do
     %x{#{my_exe} --execute "select user from mysql.user"}.split("\n").include?(
       node[:crowd][:mysql][:username]
     ) &&
-    %x{#{my_exe} --execute "select user from db where db = '#{node[:crowd][:mysql][:dbname]}' and user = '#{node[:crowd][:mysql][:username]}'}.split("\n").include?(
+    %x{#{my_exe} --execute "select user from db where db = '#{node[:crowd][:mysql][:dbname]}' and user = '#{node[:crowd][:mysql][:username]}'"}.split("\n").include?(
       node[:crowd][:mysql][:username]
     )
   end
