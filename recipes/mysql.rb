@@ -29,14 +29,6 @@ grant_crowd_sql = "grant all privileges on #{node[:crowd][:mysql][:dbname]}.* to
     
 execute "add crowd user to database" do
   command "#{my_exe} --execute \"#{grant_crowd_sql};\""
-  not_if do
-    %x{#{my_exe} --execute "select user from mysql.user"}.split("\n").include?(
-      node[:crowd][:mysql][:username]
-    ) &&
-    %x{#{my_exe} --execute "select user from mysql.db where db = '#{node[:crowd][:mysql][:dbname]}' and user = '#{node[:crowd][:mysql][:username]}'"}.split("\n").include?(
-      node[:crowd][:mysql][:username]
-    )
-  end
 end
 
 jcon_url = File.join(
