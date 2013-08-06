@@ -45,6 +45,19 @@ execute "update crowd permissions" do
   subscribes :run, resources(:execute => 'install crowd'), :immediately
 end
 
+template File.join(node[:crowd][:install][:current], "crowd.properties")  do
+  source "crowd_properties.erb"
+  mode 0655
+  owner node[:crowd][:run_as]
+  group node[:crowd][:run_as]
+  variables(
+    :app_password => node[:crowd][:application][:password],
+    :crowd_url => node[:crowd][:url],
+    :crowd_app_url => node[:crowd][:application][:url] 
+  )
+  notifies :restart, resources(:service => 'crowd'), :delayed
+end
+
 include_recipe 'crowd::datastore'
 
 file File.join(node[:crowd][:install][:current], 'crowd-webapp/WEB-INF/classes/crowd-init.properties') do
