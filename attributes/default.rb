@@ -1,6 +1,6 @@
 default[:crowd][:scratch_dir] = '/usr/src/crowd'
 default[:crowd][:base_url] = 'http://www.atlassian.com/software/crowd/downloads/binary/'
-default[:crowd][:version] = '2.5.1'
+default[:crowd][:version] = '2.6.4'
 default[:crowd][:flavor] = :standalone # or :war or :crowdid
 default[:crowd][:names][:crowdid] = 'atlassian-crowd-openid'
 default[:crowd][:names][:standalone] = 'atlassian-crowd'
@@ -21,18 +21,18 @@ default[:crowd][:iptables] = true
 default[:crowd][:application][:password] = "avFVRAlR"
 default[:crowd][:url] = case node[:jmh_server][:environment]
   when "prod"
-    "http://crowd.johnmuirhealth.com:8095/crowd/services/"
+    "http\\://crowd.johnmuirhealth.com\\:8095/crowd/services/"
   when "stage"
-    "http://crowd-stage.johnmuirhealth.com:8095/crowd/services/"
+    "http\\://crowd-stage.johnmuirhealth.com\\:8095/crowd/services/"
   else
-    "http://crowd-dev.johnmuirhealth.com:8095/crowd/services/"
+    "http\\://crowd-dev.johnmuirhealth.com\\:8095/crowd/services/"
 end
 default[:crowd][:application][:url] = case node[:jmh_server][:environment]
   when "prod"
-    "http://crowd.johnmuirhealth.com:8095/crowd"
+    "http\\://crowd.johnmuirhealth.com\\:8095/crowd"
   when "stage"
-     "http://crowd-stage.johnmuirhealth.com:8095/crowd"
+     "http\\://crowd-stage.johnmuirhealth.com\\:8095/crowd"
   else
-     "http://crowd-dev.johnmuirhealth.com:8095/crowd"
+     "http\\://crowd-dev.johnmuirhealth.com\\:8095/crowd"
 end
      
