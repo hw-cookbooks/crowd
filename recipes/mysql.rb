@@ -1,3 +1,4 @@
+::Chef::Recipe.send(:include, Opscode::OpenSSL::Password)
 include_recipe 'crowd'
 include_recipe 'mysql::server'
 
@@ -16,30 +17,18 @@ execute "add crowd database" do
   end
 end
 
-ruby_block 'auto generate crowd mysql password' do
-  block do
-    node[:crowd][:mysql][:password] = secure_password # NOTE: This method comes from mysql::server
-  end
-  only_if do
-    node[:crowd][:mysql][:auto_password] &&
-    node[:crowd][:mysql][:password].to_s.empty?
-  end
+
+if node[:crowd][:mysql][:password].nil?
+  node.set[:crowd][:mysql][:password] = secure_password
 end
 
-execute "add crowd user to database" do
-  g_str = "grant all privileges on #{node[:crowd][:mysql][:dbname]}.* to '#{node[:crowd][:mysql][:username]}'@'localhost'"
+grant_crowd_sql = "grant all privileges on #{node[:crowd][:mysql][:dbname]}.* to '#{node[:crowd][:mysql][:username]}'@'localhost'"
   unless(node[:crowd][:mysql][:password].to_s.empty?)
-    g_str << " identified by '#{node[:crowd][:mysql][:password]}'"
+    grant_crowd_sql << " identified by '#{node[:crowd][:mysql][:password]}'"
   end
-  command "#{my_exe} --execute \"#{g_str};\""
-  not_if do
-    %x{#{my_exe} --execute "select user from mysql.user"}.split("\n").include?(
-      node[:crowd][:mysql][:username]
-    ) &&
-    %x{#{my_exe} --execute "select user from db where db = '#{node[:crowd][:mysql][:dbname]}' and user = '#{node[:crowd][:mysql][:username]}'"}.split("\n").include?(
-      node[:crowd][:mysql][:username]
-    )
-  end
+    
+execute "add crowd user to database" do
+  command "#{my_exe} --execute \"#{grant_crowd_sql};\""
 end
 
 jcon_url = File.join(
@@ -60,7 +49,7 @@ execute 'unpack connectorj' do
   subscribes :run, resources(:remote_file => jcon_local), :immediately
 end
 
-node[:crowd][:mysql][:connectorj][:local_jar] = File.join(
+node.set[:crowd][:mysql][:connectorj][:local_jar] = File.join(
   node[:crowd][:scratch_dir],
   File.basename(jcon_local).sub('.tar.gz', ''),
   "#{File.basename(jcon_local).sub('.tar.gz', '')}-bin.jar"
