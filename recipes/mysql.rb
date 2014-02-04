@@ -18,7 +18,7 @@ end
 
 ruby_block 'auto generate crowd mysql password' do
   block do
-    node[:crowd][:mysql][:password] = secure_password # NOTE: This method comes from mysql::server
+    node.set[:crowd][:mysql][:password] = secure_password # NOTE: This method comes from mysql::server
   end
   only_if do
     node[:crowd][:mysql][:auto_password] &&
@@ -60,7 +60,7 @@ execute 'unpack connectorj' do
   subscribes :run, resources(:remote_file => jcon_local), :immediately
 end
 
-node[:crowd][:mysql][:connectorj][:local_jar] = File.join(
+node.set[:crowd][:mysql][:connectorj][:local_jar] = File.join(
   node[:crowd][:scratch_dir],
   File.basename(jcon_local).sub('.tar.gz', ''),
   "#{File.basename(jcon_local).sub('.tar.gz', '')}-bin.jar"
