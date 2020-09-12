@@ -1,4 +1,4 @@
-case node[:crowd][:datastore].to_sym
+case node['crowd']['datastore'].to_sym
 when :mysql
   include_recipe 'crowd::mysql'
 when :hsqldb
